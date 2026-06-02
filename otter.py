@@ -24,13 +24,13 @@ def muzzle(t):
 # https://en.wikipedia.org/wiki/Lemniscate_of_Bernoulli
 def tail(t):
     t2 = np.linspace(0, np.pi, 200)
-    x = -(0.45*np.cos(t2) + 0.18*np.cos(2*t2) + 0.14*np.cos(3*t2) + 1.12)
-    y = 0.14*np.sin(t2) + 0.07*np.sin(2*t2) - 0.03*np.sin(3*t2)
+    x = -(0.45*np.cos(t2) + 0.18*np.cos(2*t2) + 0.03*np.cos(3*t2) + 1.12)
+    y = 0.16*np.sin(t2) + 0.05*np.sin(2*t2)
     return x, y
 
 def ear(t, side=1):
     x = -(0.08*np.cos(t) - 1.08 + side*0.18)
-    y = 0.12*np.sin(t) + 0.28
+    y = 0.10*np.sin(t) + 0.22
     return x, y
 
 def paw(t, ox, oy):
@@ -45,7 +45,7 @@ def transform(x, y, scale, angle_deg, tx, ty):
     yr = scale * (s*x + c*y) + ty
     return xr, yr
 
-def otter_palette(hue):
+def otter_palette(rng):
     base_hue = rng.uniform(0.055, 0.085)
     
     # https://en.wikipedia.org/wiki/HSL_and_HSV
@@ -99,32 +99,51 @@ rng = np.random.default_rng(7)
 N = 80
 
 fig, ax = plt.subplots(figsize=(16, 9), facecolor='#0d2b35')
-ax.set_facecolor('#0d2b35')
 ax.set_aspect('equal')
 ax.axis('off')
+
+fig.patch.set_facecolor('#0d2b35')
+ax.set_facecolor('#0d2b35')
+
+ax.fill_between([-10, 10], -5.5, 5.5, color='#0d2b35', zorder=0)
+
+water_colors = ['#1a6b7a', '#2a4a6b', '#1e3d4f', '#16505f', '#0f3d4a']
+for _ in range(200):
+    wx = rng.uniform(-11, 11)
+    wy = rng.uniform(-6, 6)
+    wl = rng.uniform(0.4, 3.0)
+    col = rng.choice(water_colors)
+    alp = rng.uniform(0.06, 0.20)
+    lw = rng.uniform(0.4, 1.8)
+    dx = wl * np.cos(np.radians(35))
+    dy = wl * np.sin(np.radians(35))
+    ax.plot([wx, wx + dx], [wy, wy + dy], color=col, alpha=alp, linewidth=lw, zorder=1)
+
+for _ in range(80):
+    gx = rng.uniform(-9, 9)
+    gy = rng.uniform(-5, 5)
+    gl = rng.uniform(0.1, 0.6)
+    ax.plot([gx, gx + gl], [gy, gy], color='#a8d8e8', alpha=rng.uniform(0.04, 0.12), linewidth=0.6, zorder=1)
+
 ax.set_xlim(-10, 10)
 ax.set_ylim(-5.5, 5.5)
 
-def sample_hue():
-    return rng.uniform(0.50, 0.72) + rng.normal(0, 0.02)
+cols, rows = 12, 10
 
-for i in range(N):
-    phi = rng.uniform(0, 1)
+for row in range(rows):
+    for col in range(cols):
+        phi = col / (cols - 1)
+        band = (row / (rows - 1)) - 0.5
 
-    cx = -9 + phi * 18 + rng.normal(0, 1.2)
-    cy = -4 + phi * 8 + rng.normal(0, 0.9)
+        cx = -7 + phi * 14 + band * 2.5 + rng.normal(0, 0.4)
+        cy = -3 + phi * 6 + band * 1.2 + rng.normal(0, 0.3)
 
-    scale = rng.uniform(0.5, 0.85) * (0.8 + 0.2 * phi)
+        scale = rng.uniform(0.65, 1.0) * (0.80 + 0.20 * phi)
+        angle = 35 + rng.normal(0, 18)
+        alpha = rng.uniform(0.80, 0.95)
 
-    angle = 35 + rng.normal(0, 12)
-
-    hue = 0.50 + phi * 0.20 + rng.normal(0, 0.02)
-    hue = np.clip(hue, 0.48, 0.76)
-
-    alpha = rng.uniform(0.80, 0.95)
-
-    draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, rng=rng, alpha=alpha)
+        draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, rng=rng, alpha=alpha)
 
 plt.tight_layout(pad=0)
-plt.savefig('otter_v1.png', dpi=200, bbox_inches='tight', facecolor='#0a0e1a')
+plt.savefig('otter_v1.png', dpi=200, bbox_inches='tight', facecolor='#0d2b35')
 plt.show()
