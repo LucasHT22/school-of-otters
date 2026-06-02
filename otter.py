@@ -46,26 +46,29 @@ def transform(x, y, scale, angle_deg, tx, ty):
     return xr, yr
 
 def otter_palette(hue):
-    # https://en.wikipedia.org/wiki/HSL_and_HSV
-    def hsl(h, s, l):
-        return mcolors.hsv_to_rgb([h, s, l])
+    base_hue = rng.uniform(0.055, 0.085)
     
+    # https://en.wikipedia.org/wiki/HSL_and_HSV
     import colorsys
-    def hsl_c(h, s, l):
-        return colorsys.hls_to_rgb(h, l, s)
+    def c(h, s, l):
+        r, g, b = colorsys.hls_to_rgb(h, l, s)
+        return (r, g, b)
+    
+    jitter = rng.uniform(-0.01, 0.01)
     
     return {
-        'body': hsl_c(hue, 0.65, 0.38),
-        'head': hsl_c(hue, 0.60, 0.44),
-        'muzzle': hsl_c(hue + 0.05, 0.30, 0.72),
-        'tail': hsl_c(hue - 0.03, 0.70, 0.30),
-        'ear': hsl_c(hue, 0.55, 0.50),
-        'paw': hsl_c(hue + 0.02, 0.45, 0.58),
-        'nose': hsl_c(hue + 0.08, 0.20, 0.85),
+        'body': c(base_hue + jitter, 0.7, 0.28),
+        'head': c(base_hue + jitter, 0.65, 0.35),
+        'muzzle': c(base_hue + 0.02 + jitter, 0.40, 0.68),
+        'tail': c(base_hue - 0.01 + jitter, 0.75, 0.22),
+        'ear': c(base_hue + jitter, 0.60, 0.32),
+        'paw': c(base_hue + 0.01 + jitter, 0.50, 0.42),
+        'nose': c(base_hue - 0.01, 0.20, 0.12),
+        'belly': c(base_hue + 0.03 + jitter, 0.35, 0.62)
     }
 
-def draw_otter(ax, scale, angle, tx, ty, hue, alpha=0.88):
-    pal = otter_palette(hue)
+def draw_otter(ax, scale, angle, tx, ty, rng, alpha=0.88):
+    pal = otter_palette(rng)
     lw = 0
 
     def fill(xy_fn, color, t_=t):
@@ -74,7 +77,7 @@ def draw_otter(ax, scale, angle, tx, ty, hue, alpha=0.88):
         ax.fill(xr, yr, color=color, linewidth=lw, alpha=alpha, zorder=ty)
     
     fill(body, pal['body'])
-    fill(tail, pal["tail"])
+    fill(lambda t_: tail(None), pal['tail'])
     fill(head, pal['head'])
     fill(muzzle, pal['muzzle'])
     fill(lambda t: ear(t, -1), pal['ear'])
@@ -95,8 +98,8 @@ def draw_otter(ax, scale, angle, tx, ty, hue, alpha=0.88):
 rng = np.random.default_rng(7)
 N = 80
 
-fig, ax = plt.subplots(figsize=(16, 9), facecolor='#0a0e1a')
-ax.set_facecolor('#0a0e1a')
+fig, ax = plt.subplots(figsize=(16, 9), facecolor='#0d2b35')
+ax.set_facecolor('#0d2b35')
 ax.set_aspect('equal')
 ax.axis('off')
 ax.set_xlim(-10, 10)
@@ -111,7 +114,7 @@ for i in range(N):
     cx = -9 + phi * 18 + rng.normal(0, 1.2)
     cy = -4 + phi * 8 + rng.normal(0, 0.9)
 
-    scale = rng.uniform(0.5, 0.85) * (0.8 + 0.2 + phi)
+    scale = rng.uniform(0.5, 0.85) * (0.8 + 0.2 * phi)
 
     angle = 35 + rng.normal(0, 12)
 
@@ -120,7 +123,7 @@ for i in range(N):
 
     alpha = rng.uniform(0.80, 0.95)
 
-    draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, hue=hue, alpha=alpha)
+    draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, rng=rng, alpha=alpha)
 
 plt.tight_layout(pad=0)
 plt.savefig('otter_v1.png', dpi=200, bbox_inches='tight', facecolor='#0a0e1a')
