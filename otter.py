@@ -64,36 +64,71 @@ def otter_palette(rng):
         'ear': c(base_hue + jitter, 0.60, 0.32),
         'paw': c(base_hue + 0.01 + jitter, 0.50, 0.42),
         'nose': c(base_hue - 0.01, 0.20, 0.12),
-        'belly': c(base_hue + 0.03 + jitter, 0.35, 0.62)
+        'belly': c(base_hue + 0.03 + jitter, 0.38, 0.58)
     }
 
-def draw_otter(ax, scale, angle, tx, ty, rng, alpha=0.88):
+def draw_otter(ax, scale, angle, tx, ty, rng, alpha=0.88, zorder_base=0):
     pal = otter_palette(rng)
     lw = 0
 
     def fill(xy_fn, color, t_=t):
         x, y = xy_fn(t_)
         xr, yr = transform(x, y, scale, angle, tx, ty)
-        ax.fill(xr, yr, color=color, linewidth=lw, alpha=alpha, zorder=ty)
+        ax.fill(xr, yr, color=color, linewidth=lw, alpha=alpha, zorder=zorder_base)
+        ax.plot(np.append(xr, xr[0]), np.append(yr, yr[0]), color=pal['tail'], linewidth=0.3, alpha=0.25, zorder=zorder_base)
     
+    def plot_point(lx, ly, color, size):
+        px, py = transform(np.array([lx]), np.array([ly]), scale, angle, tx, ty)
+        ax.plot(px, py, 'o', color=color, markersize=size * scale, zorder=zorder_base+2)
+
     fill(body, pal['body'])
     fill(lambda t_: tail(None), pal['tail'])
+
+    def belly(t):
+        x = -(0.55*np.cos(t) + 0.10*np.cos(2*t))
+        y = -(0.18*np.sin(t))
+        return x, y
+    fill(belly, pal['belly'])
+
     fill(head, pal['head'])
     fill(muzzle, pal['muzzle'])
+
+    def inner_ear(t, side=1):
+        x = -(0.04*np.cos(t) - 1.08 + side*0.18)
+        y = 0.06*np.sin(t) + 0.22
+        return x, y
+
     fill(lambda t: ear(t, -1), pal['ear'])
+    fill(lambda t: inner_ear(t, -1), pal['muzzle'])
     fill(lambda t: ear(t, 1), pal['ear'])
+    fill(lambda t: inner_ear(t, 1), pal['muzzle'])
+
     fill(lambda t: paw(t, -0.45, -0.38), pal['paw'])
     fill(lambda t: paw(t, 0.15, -0.39), pal['paw'])
 
-    nx, ny = transform(np.array([1.40]), np.array([0.0]), scale, angle, tx, ty)
-    ax.plot(nx, ny, 'o', color=pal['nose'], markersize=scale*3.5, zorder=ty+1)
+    nose_t = np.linspace(0, 2*np.pi, 30)
+    def nose_shape(t):
+        x = -(0.055*np.cos(t) + 1.40)
+        y = 0.035*np.sin(t) + 0.01
+        return x, y
+    fill(nose_shape, pal['nose'])
+
+    plot_point(1.12, 0.14, pal['nose'], 2.8)
+    plot_point(1.10, 0.16, '#ffffff', 1.2)
 
     for dy in [-0.035, 0.0, 0.035]:
         for sign in [-1, 1]:
-            wx = np.array([1.32, 1.32 + sign*0.20])
-            wy = np.array([dy, dy + sign*0.01])
+            wx = np.array([1.32, 1.32 + sign*0.26])
+            wy = np.array([dy, dy + sign*0.015])
             xr, yr = transform(wx, wy, scale, angle, tx, ty)
-            ax.plot(xr, yr, color=pal['nose'], linewidth=0.6, alpha=0.6, zorder=ty+1)
+            ax.plot(xr, yr, color=pal['nose'], linewidth=0.6, alpha=0.6, zorder=zorder_base+1)
+    
+    for ox, oy in [(-0.45, -0.38), (0.15, -0.39)]:
+        for toe_dx in [-0.06, 0.0, 0.06]:
+            px = np.array([-(ox + toe_dx), -(ox + toe_dx)])
+            py = np.array([oy - 0.04, oy + 0.04])
+            xr, yr = transform(px, py, scale, angle, tx, ty)
+            ax.plot(xr, yr, color=pal['nose'], linewidth=0.5, alpha=0.35, zorder=zorder_base+1)
 
 rng = np.random.default_rng(7)
 N = 80
@@ -130,19 +165,18 @@ ax.set_ylim(-5.5, 5.5)
 
 cols, rows = 12, 10
 
-for row in range(rows):
-    for col in range(cols):
-        phi = col / (cols - 1)
-        band = (row / (rows - 1)) - 0.5
+for i, (row, col) in enumerate((r, c) for r in range(rows) for c in range(cols)):
+    phi = col / (cols - 1)
+    band = (row / (rows - 1)) - 0.5
 
-        cx = -7 + phi * 14 + band * 2.5 + rng.normal(0, 0.4)
-        cy = -3 + phi * 6 + band * 1.2 + rng.normal(0, 0.3)
+    cx = -7 + phi * 14 + band * 2.5 + rng.normal(0, 0.4)
+    cy = -3 + phi * 6 + band * 1.2 + rng.normal(0, 0.3)
 
-        scale = rng.uniform(0.65, 1.0) * (0.80 + 0.20 * phi)
-        angle = 35 + rng.normal(0, 18)
-        alpha = rng.uniform(0.80, 0.95)
+    scale = rng.uniform(0.65, 1.0) * (0.80 + 0.20 * phi)
+    angle = 35 + rng.normal(0, 18)
+    alpha = rng.uniform(0.80, 0.95)
 
-        draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, rng=rng, alpha=alpha)
+    draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, rng=rng, alpha=alpha, zorder_base=i*10)
 
 plt.tight_layout(pad=0)
 plt.savefig('otter_v1.png', dpi=200, bbox_inches='tight', facecolor='#0d2b35')
