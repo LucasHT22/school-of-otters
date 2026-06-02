@@ -64,3 +64,64 @@ def otter_palette(hue):
         'nose': hsl_c(hue + 0.08, 0.20, 0.85),
     }
 
+def draw_otter(ax, scale, angle, tx, ty, hue, alpha=0.88):
+    pal = otter_palette(hue)
+    lw = 0
+
+    def fill(xy_fn, color, t_=t):
+        x, y = xy_fn(t_)
+        xr, yr = transform(x, y, scale, angle, tx, ty)
+        ax.fill(xr, yr, color=color, linewidth=lw, alpha=alpha, zorder=ty)
+    
+    fill(body, pal['body'])
+    fill(tail, pal["tail"])
+    fill(head, pal['head'])
+    fill(muzzle, pal['muzzle'])
+    fill(lambda t: ear(t, -1), pal['ear'])
+    fill(lambda t: ear(t, 1), pal['ear'])
+    fill(lambda t: paw(t, -0.45, 0.38), pal['paw'])
+    fill(lambda t: paw(t, 0.15, 0.39), pal['paw'])
+
+    nx, ny = transform(np.array([-1.40]), np.array([0.0]), scale, angle, tx, ty)
+    ax.plot(nx, ny, 'o', color=pal['nose'], markersize=scale*3.5, zorder=ty+1)
+
+    for dy in [-0.035, 0.0, 0.035]:
+        for sign in [-1, 1]:
+            wx = np.array([-1.32, -1.32 + sign*0.20])
+            wy = np.array([dy, dy + sign*0.01])
+            xr, yr = transform(wx, wy, scale, angle, tx, ty)
+            ax.plot(xr, yr, color=pal['nose'], linewidth=0.6, alpha=0.6, zorder=ty+1)
+
+rng = np.random.default_rng(7)
+N = 80
+
+fig, ax = plt.subplots(figsize=(16, 9), facecolor='#0a0e1a')
+ax.set_facecolor('#0a0e1a')
+ax.set_aspect('equal')
+ax.axis('off')
+ax.set_xlim(-10, 10)
+ax.set_ylim(-5.5, 5.5)
+
+def sample_hue():
+    return rng.uniform(0.50, 0.72) + rng.normal(0, 0.02)
+
+for i in range(N):
+    phi = rng.uniform(0, 1)
+
+    cx = -9 + phi * 18 + rng.normal(0, 1.2)
+    cy = -4 + phi * 8 + rng.normal(0, 0.9)
+
+    scale = rng.uniform(0.5, 0.85) * (0.8 + 0.2 + phi)
+
+    angle = 35 + rng.normal(0, 12)
+
+    hue = 0.50 + phi * 0.20 + rng.normal(0, 0.02)
+    hue = np.clip(hue, 0.48, 0.76)
+
+    alpha = rng.uniform(0.80, 0.95)
+
+    draw_otter(ax, scale=scale, angle=angle, tx=cx, ty=cy, hue=hue, alpha=alpha)
+
+plt.tight_layout(pad=0)
+plt.savefig('otter_v1.png', dpi=200, bbox_inches='tight', facecolor='#0a0e1a')
+plt.show()
