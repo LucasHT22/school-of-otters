@@ -8,7 +8,7 @@ t = np.linspace(0, 2 * np.pi, 400)
 
 def body(t):
     x = -(np.cos(t) + 0.15*np.cos(2*t) - 0.04*np.cos(3*t))
-    y = 0.38*np.sin(t) + 0.06*np.sin(2*t) - 0.02*np.sin(3*t)
+    y = -(0.38*np.sin(t) + 0.06*np.sin(2*t) - 0.02*np.sin(3*t))
     return x, y
 
 def head(t):
@@ -82,8 +82,8 @@ def draw_otter(ax, scale, angle, tx, ty, rng, alpha=0.88):
     fill(muzzle, pal['muzzle'])
     fill(lambda t: ear(t, -1), pal['ear'])
     fill(lambda t: ear(t, 1), pal['ear'])
-    fill(lambda t: paw(t, -0.45, 0.38), pal['paw'])
-    fill(lambda t: paw(t, 0.15, 0.39), pal['paw'])
+    fill(lambda t: paw(t, -0.45, -0.38), pal['paw'])
+    fill(lambda t: paw(t, 0.15, -0.39), pal['paw'])
 
     nx, ny = transform(np.array([1.40]), np.array([0.0]), scale, angle, tx, ty)
     ax.plot(nx, ny, 'o', color=pal['nose'], markersize=scale*3.5, zorder=ty+1)
