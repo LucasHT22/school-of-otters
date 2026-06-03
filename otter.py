@@ -7,13 +7,13 @@ from matplotlib.path import Path
 t = np.linspace(0, 2 * np.pi, 400)
 
 def body(t):
-    x = -(np.cos(t) + 0.15*np.cos(2*t) - 0.04*np.cos(3*t))
-    y = -(0.38*np.sin(t) + 0.06*np.sin(2*t) - 0.02*np.sin(3*t))
+    x = -(np.cos(t) + 0.20*np.cos(2*t) - 0.05*np.cos(3*t))
+    y = -(0.34*np.sin(t) - 0.09*np.sin(2*t) + 0.02*np.sin(3*t))
     return x, y
 
 def head(t):
-    x = -(0.30*np.cos(t) + 0.04*np.cos(2*t) - 1.08)
-    y = 0.28*np.sin(t) + 0.03*np.sin(2*t) + 0.06
+    x = -(0.32*np.cos(t) + 0.06*np.cos(2*t) + 0.02*np.cos(3*t) - 1.08)
+    y = 0.25*np.sin(t) + 0.04*np.sin(2*t) + 0.06
     return x, y
 
 def muzzle(t):
@@ -24,8 +24,8 @@ def muzzle(t):
 # https://en.wikipedia.org/wiki/Lemniscate_of_Bernoulli
 def tail(t):
     t2 = np.linspace(0, np.pi, 200)
-    x = -(0.45*np.cos(t2) + 0.18*np.cos(2*t2) + 0.03*np.cos(3*t2) + 1.12)
-    y = 0.16*np.sin(t2) + 0.05*np.sin(2*t2)
+    x = -(0.45*np.cos(t2) + 0.12*np.cos(2*t2) + 0.02*np.cos(3*t2) + 1.05)
+    y = 0.12*np.sin(t2) + 0.03*np.sin(2*t2)
     return x, y
 
 def ear(t, side=1):
@@ -85,8 +85,8 @@ def draw_otter(ax, scale, angle, tx, ty, rng, alpha=0.88, zorder_base=0):
     fill(lambda t_: tail(None), pal['tail'])
 
     def belly(t):
-        x = -(0.55*np.cos(t) + 0.10*np.cos(2*t))
-        y = -(0.18*np.sin(t))
+        x = -(0.38*np.cos(t))
+        y = -(0.12*np.sin(t))
         return x, y
     fill(belly, pal['belly'])
 
@@ -108,18 +108,20 @@ def draw_otter(ax, scale, angle, tx, ty, rng, alpha=0.88, zorder_base=0):
 
     nose_t = np.linspace(0, 2*np.pi, 30)
     def nose_shape(t):
-        x = -(0.055*np.cos(t) + 1.40)
-        y = 0.035*np.sin(t) + 0.01
+        x = 0.055*np.cos(t) + 1.36
+        y = 0.032*np.sin(t) + 0.02
         return x, y
     fill(nose_shape, pal['nose'])
 
-    plot_point(1.12, 0.14, pal['nose'], 2.8)
-    plot_point(1.10, 0.16, '#ffffff', 1.2)
+    plot_point(1.20, 0.10, pal['nose'], 2.8)
+    plot_point(1.22, 0.12, '#ffffff', 1.2)
+    plot_point(1.05, -0.08, pal['nose'], 2.4)
+    plot_point(1.07, -0.06, '#ffffff', 1.0)
 
     for dy in [-0.035, 0.0, 0.035]:
         for sign in [-1, 1]:
-            wx = np.array([1.32, 1.32 + sign*0.26])
-            wy = np.array([dy, dy + sign*0.015])
+            wx = np.array([1.30, 1.30 + sign*0.22])
+            wy = np.array([dy, dy + sign*0.008])
             xr, yr = transform(wx, wy, scale, angle, tx, ty)
             ax.plot(xr, yr, color=pal['nose'], linewidth=0.6, alpha=0.6, zorder=zorder_base+1)
     
@@ -163,16 +165,16 @@ for _ in range(80):
 ax.set_xlim(-10, 10)
 ax.set_ylim(-5.5, 5.5)
 
-cols, rows = 12, 10
+cols, rows = 8, 5
 
 for i, (row, col) in enumerate((r, c) for r in range(rows) for c in range(cols)):
     phi = col / (cols - 1)
     band = (row / (rows - 1)) - 0.5
 
-    cx = -7 + phi * 14 + band * 2.5 + rng.normal(0, 0.4)
-    cy = -3 + phi * 6 + band * 1.2 + rng.normal(0, 0.3)
+    cx = -8 + phi * 16 + band * 5.5 + rng.normal(0, 0.9)
+    cy = -3 + phi * 6 + band * 2.8 + rng.normal(0, 0.7)
 
-    scale = rng.uniform(0.65, 1.0) * (0.80 + 0.20 * phi)
+    scale = rng.uniform(0.40, 0.65) * (0.80 + 0.20 * phi)
     angle = 35 + rng.normal(0, 18)
     alpha = rng.uniform(0.80, 0.95)
 
